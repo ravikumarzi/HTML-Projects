@@ -1,0 +1,489 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi Calculator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #1e1e2f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: white;
+}
+
+.calculator {
+    width: 340px;
+    max-width: 95%;
+    background: #2c2c3e;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 5px 20px #0005;
+}
+
+/* Menu */
+.menu {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.menu div {
+    width: 5px;
+    height: 5px;
+    background: white;
+    margin: 3px;
+    border-radius: 50%;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 35px;
+    background: #444;
+    border-radius: 5px;
+    z-index: 5;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.dropdown button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown button:hover {
+    background: #666;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+input[type="text"] {
+    background: #eee;
+    color: #222;
+    font-size: 24px;
+    text-align: right;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.buttons button {
+    padding: 14px 5px;
+    background: #ff9500;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    font-size: 17px;
+}
+
+.buttons button:hover {
+    background: #e58a00;
+}
+
+.buttons .equal {
+    background: #28a745;
+    grid-column: span 2;
+}
+
+.buttons .operator {
+    background: #555;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    background: #ff9500;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+h3 {
+    overflow-wrap: anywhere;
+}
+
+#savedNotes {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.note-item {
+    background: #555;
+    margin: 7px 0;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-wrap: anywhere;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    margin-top: 8px;
+    border-radius: 4px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <div class="menu" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <div class="dropdown" id="menu">
+        <button onclick="showCalc('basic')">Basic Calculator</button>
+        <button onclick="showCalc('age')">Age Calculator</button>
+        <button onclick="showCalc('income')">Income Calculator</button>
+        <button onclick="showCalc('notes')">Notes</button>
+    </div>
+
+    <!-- BASIC CALCULATOR -->
+    <div id="basic">
+        <h2>Basic Calculator</h2>
+
+        <input type="text" id="display" disabled>
+
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="deleteLast()">⌫</button>
+            <button onclick="append('%')">%</button>
+            <button class="operator" onclick="append('/')">÷</button>
+
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button class="operator" onclick="append('*')">×</button>
+
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button class="operator" onclick="append('-')">-</button>
+
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button class="operator" onclick="append('+')">+</button>
+
+            <button onclick="append('0')">0</button>
+            <button onclick="append('.')">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <!-- AGE CALCULATOR -->
+    <div id="age" class="hidden">
+        <h2>Age Calculator</h2>
+
+        <input type="date" id="dob">
+
+        <button class="action-btn" onclick="calculateAge()">
+            Calculate Age
+        </button>
+
+        <h3 id="ageResult"></h3>
+    </div>
+
+    <!-- INCOME CALCULATOR -->
+    <div id="income" class="hidden">
+        <h2>Income Calculator</h2>
+
+        <input type="number" id="salary"
+        placeholder="Monthly Salary" min="0">
+
+        <input type="number" id="expense"
+        placeholder="Monthly Expense" min="0">
+
+        <button class="action-btn" onclick="calculateIncome()">
+            Calculate Savings
+        </button>
+
+        <h3 id="incomeResult"></h3>
+    </div>
+
+    <!-- NOTES -->
+    <div id="notes" class="hidden">
+        <h2>My Notes</h2>
+
+        <textarea id="noteInput"
+        placeholder="Write your notes..."></textarea>
+
+        <button class="action-btn" onclick="saveNote()">
+            Save Note
+        </button>
+
+        <button class="action-btn" onclick="deleteNotes()">
+            Delete All Notes
+        </button>
+
+        <h3>Saved Notes:</h3>
+
+        <div id="savedNotes"></div>
+    </div>
+
+</div>
+
+<script>
+
+// MENU
+function toggleMenu() {
+    let menu = document.getElementById("menu");
+
+    menu.style.display =
+        menu.style.display === "block" ? "none" : "block";
+}
+
+function showCalc(type) {
+    ["basic", "age", "income", "notes"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+    });
+
+    document.getElementById(type).classList.remove("hidden");
+
+    document.getElementById("menu").style.display = "none";
+
+    if (type === "notes") {
+        loadNotes();
+    }
+}
+
+// BASIC CALCULATOR
+function append(val) {
+    document.getElementById("display").value += val;
+}
+
+function clearDisplay() {
+    document.getElementById("display").value = "";
+}
+
+function deleteLast() {
+    let display = document.getElementById("display");
+
+    display.value = display.value.slice(0, -1);
+}
+
+function calculate() {
+    let display = document.getElementById("display");
+    let expression = display.value;
+
+    if (!expression.trim()) return;
+
+    // Allow only calculator characters.
+    if (!/^[0-9+\-*/%.()\s]+$/.test(expression)) {
+        display.value = "Invalid Input";
+        return;
+    }
+
+    try {
+        let result = Function(
+            '"use strict"; return (' + expression + ')'
+        )();
+
+        if (!Number.isFinite(result)) {
+            display.value = "Math Error";
+        } else {
+            display.value = Number(result.toFixed(10)).toString();
+        }
+
+    } catch (error) {
+        display.value = "Error";
+    }
+}
+
+// AGE CALCULATOR
+function calculateAge() {
+    let dobValue = document.getElementById("dob").value;
+    let result = document.getElementById("ageResult");
+
+    if (!dobValue) {
+        result.innerText = "Please select your date of birth.";
+        return;
+    }
+
+    let [year, month, day] = dobValue.split("-").map(Number);
+
+    let dob = new Date(year, month - 1, day);
+    let today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    if (dob > today) {
+        result.innerText = "Date of birth cannot be in the future.";
+        return;
+    }
+
+    let years = today.getFullYear() - year;
+    let months = today.getMonth() + 1 - month;
+    let days = today.getDate() - day;
+
+    if (days < 0) {
+        months--;
+
+        let previousMonthDays = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            0
+        ).getDate();
+
+        days += previousMonthDays;
+    }
+
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+
+    result.innerText =
+        `Your Age: ${years} Years, ${months} Months, ${days} Days`;
+}
+
+// INCOME CALCULATOR
+function calculateIncome() {
+    let salary = Number(document.getElementById("salary").value);
+    let expense = Number(document.getElementById("expense").value);
+
+    let result = document.getElementById("incomeResult");
+
+    if (
+        document.getElementById("salary").value === "" ||
+        document.getElementById("expense").value === "" ||
+        !Number.isFinite(salary) ||
+        !Number.isFinite(expense) ||
+        salary < 0 ||
+        expense < 0
+    ) {
+        result.innerText = "Please enter valid salary and expenses.";
+        return;
+    }
+
+    let savings = salary - expense;
+
+    result.innerText = "Monthly Savings: ₹" + savings.toFixed(2);
+}
+
+// NOTES
+function saveNote() {
+    let noteInput = document.getElementById("noteInput");
+    let note = noteInput.value.trim();
+
+    if (!note) {
+        alert("Please write something first!");
+        return;
+    }
+
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    notes.push(note);
+
+    localStorage.setItem("notes", JSON.stringify(notes));
+
+    noteInput.value = "";
+
+    loadNotes();
+}
+
+function loadNotes() {
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    let savedNotes = document.getElementById("savedNotes");
+
+    savedNotes.innerHTML = "";
+
+    notes.forEach((note, index) => {
+
+        let div = document.createElement("div");
+        div.className = "note-item";
+
+        let text = document.createElement("div");
+        text.textContent = note;
+
+        let button = document.createElement("button");
+        button.textContent = "Delete";
+        button.className = "delete-btn";
+
+        button.onclick = function() {
+            deleteNote(index);
+        };
+
+        div.appendChild(text);
+        div.appendChild(button);
+
+        savedNotes.appendChild(div);
+    });
+}
+
+function deleteNote(index) {
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    notes.splice(index, 1);
+
+    localStorage.setItem("notes", JSON.stringify(notes));
+
+    loadNotes();
+}
+
+function deleteNotes() {
+    if (confirm("Are you sure you want to delete all notes?")) {
+        localStorage.removeItem("notes");
+        loadNotes();
+    }
+}
+
+// LOAD NOTES WHEN PAGE OPENS
+window.onload = loadNotes;
+
+</script>
+
+</body>
+</html>

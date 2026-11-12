@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glowing Lotus Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #020205; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let progress = 0;
+        const speed = 0.003; // Growth rate
+
+        // Floating ambient glowing particles (embers/sparks)
+        const particles = Array.from({ length: 90 }, () => ({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            size: Math.random() * 2 + 0.8,
+            speedY: -(Math.random() * 0.4 + 0.1),
+            speedX: (Math.random() - 0.5) * 0.3,
+            alpha: Math.random(),
+            pulse: Math.random() * 0.03
+        }));
+
+        // Draw individual intertwined glowing vine arc
+        function drawVineArc(cx, cy, radius, startAngle, maxAngle, offsetPhase, width, color) {
+            ctx.save();
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.shadowColor = '#ffaa33';
+            ctx.shadowBlur = 12;
+
+            for (let side of [-1, 1]) {
+                ctx.beginPath();
+                let steps = 120;
+                for (let i = 0; i <= steps; i++) {
+                    let a = (i / steps) * maxAngle;
+                    if (a > maxAngle) break;
+
+                    // Organic wavy vine offset
+                    let wave = Math.sin(a * 9 + offsetPhase) * 12 + Math.cos(a * 18) * 4;
+                    let r = radius + wave;
+
+                    let x = cx + side * r * Math.sin(a);
+                    let y = cy - r * Math.cos(a);
+
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // Draw arch made of multiple intertwined tendrils
+        function drawArch(cx, cy, p) {
+            let maxArc = Math.PI * 0.82 * Math.min(p * 1.3, 1);
+            if (maxArc <= 0) return;
+
+            ctx.globalCompositeOperation = 'lighter';
+            drawVineArc(cx, cy, 220, 0, maxArc, 0, 2.5, '#ffd700');
+            drawVineArc(cx, cy, 210, 0, maxArc * 0.95, 1.5, 1.8, '#ff8c00');
+            drawVineArc(cx, cy, 230, 0, maxArc * 0.9, 3.0, 1.5, '#ffae42');
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Draw layered translucent lotus petal
+        function drawPetal(cx, cy, angle, length, width, startColor, endColor, alpha) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-width, -length * 0.4, -width * 0.8, -length * 0.9, 0, -length);
+            ctx.bezierCurveTo(width * 0.8, -length * 0.9, width, -length * 0.4, 0, 0);
+
+            // Translucent glowing gradient fill
+            let grad = ctx.createLinearGradient(0, 0, 0, -length);
+            grad.addColorStop(0, startColor);
+            grad.addColorStop(0.7, endColor);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0.95)');
+
+            ctx.fillStyle = grad;
+            ctx.globalAlpha = alpha;
+            ctx.shadowColor = '#ff66b2';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+
+            // Bright highlighted glass edge
+            ctx.strokeStyle = 'rgba(255, 230, 250, 0.9)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Animated blooming lotus flower
+        function drawLotus(cx, cy, p) {
+            if (p < 0.25) return;
+            let bloom = Math.min((p - 0.25) / 0.75, 1);
+
+            ctx.globalCompositeOperation = 'lighter';
+
+            // Layer 1: Outer wide petals
+            let outerCount = 14;
+            for (let i = 0; i < outerCount; i++) {
+                let spread = (i - (outerCount - 1) / 2) * 0.18 * bloom;
+                let len = 190 * bloom;
+                drawPetal(cx, cy, spread, len, 45, 'rgba(255, 60, 140, 0.2)', 'rgba(255, 150, 200, 0.5)', 0.6);
+            }
+
+            // Layer 2: Middle petals
+            let midCount = 10;
+            for (let i = 0; i < midCount; i++) {
+                let spread = (i - (midCount - 1) / 2) * 0.15 * bloom;
+                let len = 150 * bloom;
+                drawPetal(cx, cy, spread, len, 38, 'rgba(255, 100, 180, 0.3)', 'rgba(255, 180, 220, 0.7)', 0.8);
+            }
+
+            // Layer 3: Inner core petals
+            let innerCount = 6;
+            for (let i = 0; i < innerCount; i++) {
+                let spread = (i - (innerCount - 1) / 2) * 0.1 * bloom;
+                let len = 105 * bloom;
+                drawPetal(cx, cy, spread, len, 28, 'rgba(255, 180, 210, 0.5)', 'rgba(255, 245, 255, 0.9)', 0.9);
+            }
+
+            // Intense glowing center core
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy - 15, 20 * bloom, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffea75';
+            ctx.shadowBlur = 35;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Draw background particle embers
+        function updateAndDrawParticles() {
+            ctx.globalCompositeOperation = 'lighter';
+            particles.forEach(pt => {
+                pt.y += pt.speedY;
+                pt.x += pt.speedX;
+                pt.alpha += pt.pulse;
+
+                if (pt.alpha > 1 || pt.alpha < 0.2) pt.pulse = -pt.pulse;
+                if (pt.y < 0) pt.y = canvas.height;
+
+                ctx.save();
+                ctx.fillStyle = `rgba(255, 200, 150, ${Math.abs(pt.alpha)})`;
+                ctx.shadowColor = '#ffaa44';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 120;
+
+            drawArch(cx, cy, progress);
+            drawLotus(cx, cy - 20, progress);
+            updateAndDrawParticles();
+
+            if (progress < 1) {
+                progress += speed;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>

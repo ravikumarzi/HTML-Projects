@@ -1,0 +1,1155 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Light - 3D Login</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #03040a;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+}
+
+#scene {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at center, transparent 35%, #000000a8 100%),
+      linear-gradient(0deg, #03040a 0%, transparent 35%);
+    z-index: 1;
+}
+
+/* Intro */
+.intro {
+    position: fixed;
+    left: 50%;
+    top: 9%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 3;
+    width: 90%;
+    pointer-events: none;
+    transition: opacity 1s;
+}
+
+.intro h2 {
+    font-size: 12px;
+    letter-spacing: 7px;
+    color: #c7a66b;
+    font-weight: 500;
+}
+
+.intro p {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #777;
+    letter-spacing: 2px;
+}
+
+/* Login */
+.login-panel {
+    position: fixed;
+    z-index: 5;
+    top: 50%;
+    right: 8%;
+    transform: translateY(-50%) translateX(35px);
+    width: 380px;
+    padding: 42px;
+    border-radius: 22px;
+    background: rgba(9, 12, 20, .78);
+    border: 1px solid rgba(255, 222, 161, .22);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    box-shadow:
+      0 0 80px rgba(255, 190, 90, .08),
+      inset 0 0 30px rgba(255,255,255,.025);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 1.5s ease, transform 1.5s ease,
+                visibility 1.5s;
+}
+
+.login-panel.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(-50%) translateX(0);
+}
+
+.logo {
+    text-align: center;
+    font-size: 35px;
+    color: #f5cf86;
+    margin-bottom: 8px;
+    text-shadow: 0 0 25px #ffcc76;
+}
+
+.login-panel h1 {
+    text-align: center;
+    font-size: 26px;
+    letter-spacing: 2px;
+    margin-bottom: 9px;
+}
+
+.subtitle {
+    color: #999;
+    text-align: center;
+    font-size: 12px;
+    margin-bottom: 32px;
+}
+
+.input-group {
+    margin-bottom: 21px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 12px;
+    color: #d1c7b6;
+    margin-bottom: 10px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.14);
+    outline: none;
+    border-radius: 9px;
+    color: white;
+    font-size: 13px;
+    transition: .3s;
+}
+
+.input-group input:focus {
+    border-color: #e8b95e;
+    box-shadow: 0 0 18px #dba84c35;
+}
+
+.input-group input::placeholder {
+    color: #686868;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0 25px;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.options label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+a {
+    color: #e9c27d;
+    text-decoration: none;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(100deg, #a36d28, #f5d28a, #b07b34);
+    color: #15100a;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 0 0 30px #f4c66b45;
+    transition: .3s;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 35px #f5c46b99;
+}
+
+.login-btn:active {
+    transform: scale(.97);
+}
+
+.message {
+    min-height: 18px;
+    text-align: center;
+    font-size: 11px;
+    color: #f2ce86;
+    margin-top: 15px;
+}
+
+.footer {
+    margin-top: 27px;
+    text-align: center;
+    font-size: 11px;
+    color: #777;
+}
+
+.footer a {
+    margin-left: 4px;
+}
+
+/* Loading */
+.loading {
+    position: fixed;
+    bottom: 7%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #c7a66b;
+    font-size: 10px;
+    letter-spacing: 4px;
+    z-index: 4;
+    animation: pulse 2s infinite;
+    transition: opacity .8s;
+    white-space: nowrap;
+}
+
+@keyframes pulse {
+    50% { opacity: .3; }
+}
+
+/* Restart */
+.restart {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 8;
+    background: #15151b;
+    color: #e9c27d;
+    border: 1px solid #6e5936;
+    border-radius: 30px;
+    padding: 12px 18px;
+    cursor: pointer;
+    font-size: 11px;
+    display: none;
+}
+
+@media(max-width: 700px) {
+    .login-panel {
+        width: min(90%, 370px);
+        right: 5%;
+        padding: 30px 25px;
+        top: 53%;
+    }
+
+    .login-panel h1 {
+        font-size: 23px;
+    }
+
+    .intro {
+        top: 5%;
+    }
+
+    .intro h2 {
+        letter-spacing: 4px;
+        font-size: 10px;
+    }
+
+    .restart {
+        bottom: 12px;
+        right: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="scene"></canvas>
+
+<div class="overlay"></div>
+
+<div class="intro" id="intro">
+    <h2>SHADOW LIGHT EXPERIENCE</h2>
+    <p>ILLUMINATING YOUR DIGITAL WORLD</p>
+</div>
+
+<div class="loading" id="loading">
+    INITIALIZING EXPERIENCE...
+</div>
+
+<!-- LOGIN PANEL -->
+
+<div class="login-panel" id="loginPanel">
+
+    <div class="logo">✦</div>
+
+    <h1>WELCOME BACK</h1>
+
+    <p class="subtitle">
+        Your journey begins here.
+    </p>
+
+    <form id="loginForm">
+
+        <div class="input-group">
+            <label>Email Address</label>
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                autocomplete="username"
+                required>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                minlength="6"
+                required>
+        </div>
+
+        <div class="options">
+            <label>
+                <input type="checkbox">
+                Remember me
+            </label>
+
+            <a href="#" id="forgot">Forgot password?</a>
+        </div>
+
+        <button class="login-btn" type="submit">
+            SIGN IN →
+        </button>
+
+        <div class="message" id="message"></div>
+
+    </form>
+
+    <div class="footer">
+        Don't have an account?
+        <a href="#" id="signup">Create Account</a>
+    </div>
+
+</div>
+
+<button class="restart" id="restart">
+    ↻ Replay Animation
+</button>
+
+
+<!-- THREE JS -->
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
+}
+</script>
+
+<script type="module">
+
+import * as THREE from 'three';
+
+/* -------------------------
+   BASIC SCENE
+-------------------------- */
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x03040a);
+scene.fog = new THREE.FogExp2(0x080a12, 0.035);
+
+const camera = new THREE.PerspectiveCamera(
+    42,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+);
+
+camera.position.set(0, 2.2, 13);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById('scene'),
+    antialias: true,
+    alpha: false
+});
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+);
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+
+/* -------------------------
+   LIGHTING
+-------------------------- */
+
+const ambient = new THREE.AmbientLight(
+    0x526080,
+    0.65
+);
+
+scene.add(ambient);
+
+const moonLight = new THREE.DirectionalLight(
+    0x7c8eb5,
+    1.3
+);
+
+moonLight.position.set(-5, 8, 5);
+moonLight.castShadow = true;
+moonLight.shadow.mapSize.set(1024, 1024);
+scene.add(moonLight);
+
+
+/* -------------------------
+   FLOOR
+-------------------------- */
+
+const floorGeometry = new THREE.PlaneGeometry(
+    200, 200
+);
+
+const floorMaterial = new THREE.MeshStandardMaterial({
+    color: 0x10131c,
+    roughness: 0.8,
+    metalness: 0.25
+});
+
+const floor = new THREE.Mesh(
+    floorGeometry,
+    floorMaterial
+);
+
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -2.15;
+floor.receiveShadow = true;
+
+scene.add(floor);
+
+
+/* -------------------------
+   HELPERS
+-------------------------- */
+
+function material(color, roughness = 0.65, metalness = 0.1) {
+    return new THREE.MeshStandardMaterial({
+        color,
+        roughness,
+        metalness
+    });
+}
+
+function sphere(parent, name, position, scale, mat) {
+
+    const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 24),
+        mat
+    );
+
+    mesh.name = name;
+    mesh.position.set(...position);
+    mesh.scale.set(...scale);
+
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    parent.add(mesh);
+
+    return mesh;
+}
+
+function capsule(parent, start, end, radius, mat) {
+
+    const a = new THREE.Vector3(...start);
+    const b = new THREE.Vector3(...end);
+
+    const direction = new THREE.Vector3()
+        .subVectors(b, a);
+
+    const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(
+            radius, radius,
+            direction.length(),
+            16
+        ),
+        mat
+    );
+
+    mesh.position.copy(a).add(b).multiplyScalar(.5);
+
+    mesh.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.normalize()
+    );
+
+    mesh.castShadow = true;
+
+    parent.add(mesh);
+
+    return mesh;
+}
+
+
+/* -------------------------
+   HUMAN CHARACTER
+-------------------------- */
+
+const person = new THREE.Group();
+
+scene.add(person);
+
+const skin = material(0xb77d5c);
+const skinLight = material(0xd49b76);
+const shirt = material(0x161c29);
+const pants = material(0x111522);
+const shoes = material(0x080a10);
+const hairMat = material(0x100d0c);
+const eyeMat = material(0x15100e);
+
+/* Body */
+
+const torso = sphere(
+    person,
+    'Torso',
+    [0, 1.45, 0],
+    [.48, .75, .27],
+    shirt
+);
+
+/* Chest details */
+
+sphere(
+    person,
+    'Shoulder',
+    [-.38, 1.92, 0],
+    [.3, .27, .29],
+    shirt
+);
+
+sphere(
+    person,
+    'Shoulder',
+    [.38, 1.92, 0],
+    [.3, .27, .29],
+    shirt
+);
+
+/* Neck */
+
+capsule(
+    person,
+    [0, 2.02, 0],
+    [0, 2.30, 0],
+    .14,
+    skin
+);
+
+/* Head */
+
+const head = new THREE.Group();
+head.position.set(0, 2.63, 0);
+
+person.add(head);
+
+sphere(
+    head,
+    'Face',
+    [0, 0, 0],
+    [.31, .40, .27],
+    skinLight
+);
+
+/* Hair */
+
+sphere(
+    head,
+    'Hair',
+    [0, .25, -.015],
+    [.33, .22, .29],
+    hairMat
+);
+
+/* Hair fringe */
+
+sphere(
+    head,
+    'Hair fringe',
+    [0, .16, .23],
+    [.29, .13, .09],
+    hairMat
+);
+
+/* Ears */
+
+sphere(head, 'Ear', [-.31, -.02, 0], [.07,.12,.08], skin);
+sphere(head, 'Ear', [.31, -.02, 0], [.07,.12,.08], skin);
+
+/* Nose */
+
+sphere(
+    head,
+    'Nose',
+    [0, -.04, .265],
+    [.055, .09, .07],
+    skin
+);
+
+/* Eyes */
+
+sphere(head, 'Eye', [-.12, .06, .239], [.035,.045,.025], eyeMat);
+sphere(head, 'Eye', [.12, .06, .239], [.035,.045,.025], eyeMat);
+
+/* Beard */
+
+sphere(
+    head,
+    'Beard',
+    [0, -.24, .13],
+    [.23, .13, .16],
+    hairMat
+);
+
+
+/* -------------------------
+   LEGS AND SHOES
+-------------------------- */
+
+function createLeg(x) {
+
+    const pivot = new THREE.Group();
+
+    pivot.position.set(x, .85, 0);
+    person.add(pivot);
+
+    capsule(
+        pivot,
+        [0, -.1, 0],
+        [0, -.72, 0],
+        .17,
+        pants
+    );
+
+    sphere(
+        pivot,
+        'Knee',
+        [0, -.4, 0],
+        [.18, .18, .18],
+        pants
+    );
+
+    capsule(
+        pivot,
+        [0, -.72, 0],
+        [0, -1.05, .05],
+        .14,
+        pants
+    );
+
+    const shoe = sphere(
+        pivot,
+        'Shoe',
+        [.04, -1.12, .12],
+        [.19, .11, .31],
+        shoes
+    );
+
+    return pivot;
+}
+
+const leftLeg = createLeg(-.23);
+const rightLeg = createLeg(.23);
+
+
+/* -------------------------
+   ARMS
+-------------------------- */
+
+function createArm(x, isTorchArm) {
+
+    const arm = new THREE.Group();
+
+    arm.position.set(x, 1.92, 0);
+    person.add(arm);
+
+    capsule(
+        arm,
+        [0, 0, 0],
+        [0, -.55, 0],
+        .14,
+        shirt
+    );
+
+    sphere(
+        arm,
+        'Elbow',
+        [0, -.55, 0],
+        [.15,.15,.15],
+        skin
+    );
+
+    capsule(
+        arm,
+        [0, -.55, 0],
+        [0, -1.05, 0],
+        .105,
+        skinLight
+    );
+
+    sphere(
+        arm,
+        'Hand',
+        [0, -1.06, .02],
+        [.12,.14,.12],
+        skinLight
+    );
+
+    if (isTorchArm) {
+
+        // Torch hand points toward the login panel.
+        arm.rotation.z = -1.35;
+
+    } else {
+
+        arm.rotation.z = .15;
+
+    }
+
+    return arm;
+}
+
+const leftArm = createArm(-.45, false);
+const rightArm = createArm(.45, true);
+
+
+/* -------------------------
+   FLASHLIGHT
+-------------------------- */
+
+const torch = new THREE.Group();
+
+torch.position.set(.02, -1.04, .08);
+rightArm.add(torch);
+
+// Main torch body
+const torchBody = new THREE.Mesh(
+    new THREE.CylinderGeometry(.075, .09, .48, 24),
+    material(0x242a35, .3, .85)
+);
+
+torchBody.rotation.z = Math.PI / 2;
+torchBody.position.x = .24;
+torch.add(torchBody);
+
+// Torch head
+const torchHead = new THREE.Mesh(
+    new THREE.CylinderGeometry(.13, .09, .12, 24),
+    material(0x707b88, .25, .9)
+);
+
+torchHead.rotation.z = Math.PI / 2;
+torchHead.position.x = .51;
+torch.add(torchHead);
+
+// Glowing lens
+const lens = new THREE.Mesh(
+    new THREE.CircleGeometry(.105, 32),
+    new THREE.MeshBasicMaterial({
+        color: 0xffe6a5
+    })
+);
+
+lens.rotation.y = Math.PI / 2;
+lens.position.x = .575;
+torch.add(lens);
+
+
+/* -------------------------
+   SPOTLIGHT
+-------------------------- */
+
+const target = new THREE.Object3D();
+
+scene.add(target);
+
+const spotlight = new THREE.SpotLight(
+    0xffe3a4,
+    0,
+    18,
+    Math.PI / 7,
+    .55,
+    1.2
+);
+
+spotlight.castShadow = true;
+spotlight.shadow.mapSize.set(1024,1024);
+
+scene.add(spotlight);
+scene.add(spotlight.target);
+
+// Volumetric-style visible light cone
+const beam = new THREE.Mesh(
+    new THREE.ConeGeometry(1, 1, 48, 1, true),
+    new THREE.MeshBasicMaterial({
+        color: 0xffdf9b,
+        transparent: true,
+        opacity: .075,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    })
+);
+
+scene.add(beam);
+
+
+/* -------------------------
+   LOGIN TARGET
+-------------------------- */
+
+const loginPanel = document.getElementById('loginPanel');
+
+const loading = document.getElementById('loading');
+const intro = document.getElementById('intro');
+
+const restartBtn = document.getElementById('restart');
+
+let loginVisible = false;
+let animationStarted = false;
+
+const loginTarget = new THREE.Vector3(
+    3.5,
+    .45,
+    0
+);
+
+
+/* -------------------------
+   ANIMATION
+-------------------------- */
+
+const clock = new THREE.Clock();
+
+let elapsed = 0;
+let walkProgress = 0;
+
+const smooth = (a, b, t) => {
+    return a + (b - a) * t;
+};
+
+const clamp01 = value => {
+    return Math.max(0, Math.min(1, value));
+};
+
+function updateBeam() {
+
+    const torchWorld = new THREE.Vector3();
+
+    torch.getWorldPosition(torchWorld);
+
+    const direction = new THREE.Vector3()
+        .subVectors(loginTarget, torchWorld);
+
+    const distance = direction.length();
+
+    spotlight.position.copy(torchWorld);
+
+    target.position.copy(loginTarget);
+
+    spotlight.target.updateMatrixWorld();
+
+    // Position and orient visible cone
+    beam.position.copy(torchWorld)
+        .addScaledVector(direction, .5);
+
+    beam.scale.set(
+        1,
+        distance,
+        1
+    );
+
+    beam.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize().negate()
+    );
+}
+
+function resetAnimation() {
+
+    elapsed = 0;
+    walkProgress = 0;
+    loginVisible = false;
+    animationStarted = true;
+
+    person.position.set(-7, -.12, 0);
+
+    leftLeg.rotation.set(0,0,0);
+    rightLeg.rotation.set(0,0,0);
+
+    leftArm.rotation.set(0,0,.15);
+    rightArm.rotation.set(0,0,-1.35);
+
+    loginPanel.classList.remove('visible');
+
+    restartBtn.style.display = 'none';
+
+    intro.style.opacity = 1;
+    loading.style.opacity = 1;
+
+    spotlight.intensity = 0;
+
+    lens.material.color.set(0xffe6a5);
+}
+
+resetAnimation();
+
+
+/* -------------------------
+   RENDER LOOP
+-------------------------- */
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    const delta = Math.min(clock.getDelta(), .05);
+
+    elapsed += delta;
+
+    // WALKING PHASE
+    const walkDuration = 4.2;
+
+    walkProgress = clamp01(elapsed / walkDuration);
+
+    const movement = walkProgress * walkProgress *
+        (3 - 2 * walkProgress);
+
+    person.position.x = smooth(
+        -7,
+        -2.5,
+        movement
+    );
+
+    // Natural walking motion
+    if (walkProgress < 1) {
+
+        const walk = elapsed * 5.5;
+
+        leftLeg.rotation.x = Math.sin(walk) * .42;
+        rightLeg.rotation.x = Math.sin(walk + Math.PI) * .42;
+
+        leftArm.rotation.x = Math.sin(walk + Math.PI) * .13;
+        leftArm.rotation.z = .15 + Math.sin(walk) * .12;
+
+        person.position.y =
+            -.12 + Math.abs(Math.sin(walk)) * .035;
+
+        torso.rotation.z = Math.sin(walk) * .025;
+
+    } else {
+
+        // Stop walking
+        leftLeg.rotation.x = smooth(
+            leftLeg.rotation.x, 0, delta * 4
+        );
+
+        rightLeg.rotation.x = smooth(
+            rightLeg.rotation.x, 0, delta * 4
+        );
+
+        person.position.y = smooth(
+            person.position.y, -.12, delta * 3
+        );
+
+        torso.rotation.z = smooth(
+            torso.rotation.z, 0, delta * 3
+        );
+
+    }
+
+    // Torch hand slowly raises while walking.
+    const raise = clamp01((elapsed - 1.2) / 2.5);
+
+    rightArm.rotation.z = smooth(
+        -.55,
+        -1.35,
+        raise
+    );
+
+    // Natural hand and torch movement
+    rightArm.rotation.x =
+        Math.sin(elapsed * 2) * .025;
+
+    torch.rotation.z =
+        Math.sin(elapsed * 1.5) * .035;
+
+    // Torch aims at login panel
+    updateBeam();
+
+    // Spotlight gradually activates
+    const lightProgress = clamp01(
+        (elapsed - 2.7) / 2
+    );
+
+    spotlight.intensity = lightProgress * 95;
+
+    beam.material.opacity = lightProgress * .075;
+
+    // Reveal login when spotlight arrives
+    if (elapsed > 4.5 && !loginVisible) {
+
+        loginVisible = true;
+
+        loginPanel.classList.add('visible');
+
+        loading.style.opacity = 0;
+        intro.style.opacity = .35;
+
+        setTimeout(() => {
+            restartBtn.style.display = 'block';
+        }, 1800);
+    }
+
+    // Character idle movement
+    if (walkProgress >= 1) {
+
+        head.rotation.y =
+            Math.sin(elapsed * .5) * .035;
+
+        torso.position.y =
+            1.45 + Math.sin(elapsed * 1.5) * .012;
+
+    }
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+
+/* -------------------------
+   FORM VALIDATION
+-------------------------- */
+
+document.getElementById('loginForm')
+.addEventListener('submit', (event) => {
+
+    event.preventDefault();
+
+    const email =
+        document.getElementById('email').value.trim();
+
+    const password =
+        document.getElementById('password').value;
+
+    const message =
+        document.getElementById('message');
+
+    if (!email || !password) {
+
+        message.textContent = 'Please enter your details.';
+        return;
+
+    }
+
+    if (password.length < 6) {
+
+        message.textContent =
+            'Password must contain at least 6 characters.';
+
+        return;
+
+    }
+
+    message.textContent =
+        'Demo form submitted successfully!';
+
+});
+
+
+/* -------------------------
+   OTHER BUTTONS
+-------------------------- */
+
+document.getElementById('forgot')
+.addEventListener('click', (e) => {
+
+    e.preventDefault();
+
+    document.getElementById('message').textContent =
+        'Password recovery requires backend integration.';
+
+});
+
+document.getElementById('signup')
+.addEventListener('click', (e) => {
+
+    e.preventDefault();
+
+    document.getElementById('message').textContent =
+        'Connect your registration page here.';
+
+});
+
+restartBtn.addEventListener('click', () => {
+
+    resetAnimation();
+
+});
+
+
+/* -------------------------
+   RESPONSIVE RESIZING
+-------------------------- */
+
+window.addEventListener('resize', () => {
+
+    camera.aspect =
+        window.innerWidth / window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 2)
+    );
+
+});
+
+</script>
+
+</body>
+</html>

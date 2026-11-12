@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamcatcher Logo App</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(circle at top, #4568a8, transparent 55%),
+                linear-gradient(135deg, #10152f, #172e57, #301e53);
+        }
+
+        .logo {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            animation: appear 1.5s ease;
+        }
+
+        .dreamcatcher {
+            width: 230px;
+            height: 230px;
+            border: 5px solid #f5d995;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto 30px;
+            box-shadow:
+                0 0 15px #f5d995,
+                0 0 40px #7bbcff,
+                inset 0 0 20px #f5d995;
+            animation: glow 3s infinite alternate;
+        }
+
+        /* Inner dreamcatcher web */
+        .web {
+            position: absolute;
+            inset: 15px;
+            border: 2px solid rgba(245,217,149,.9);
+            border-radius: 50%;
+            background:
+                repeating-conic-gradient(
+                    from 0deg,
+                    transparent 0deg 28deg,
+                    rgba(245,217,149,.8) 29deg 30deg
+                );
+        }
+
+        .web::before {
+            content: "";
+            position: absolute;
+            inset: 25px;
+            border: 2px solid #f5d995;
+            border-radius: 50%;
+        }
+
+        .web::after {
+            content: "✧";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 42px;
+            color: #fff2c5;
+            text-shadow: 0 0 15px white;
+        }
+
+        /* Hanging strings */
+        .string {
+            position: absolute;
+            width: 2px;
+            height: 65px;
+            background: #f5d995;
+            top: 100%;
+            transform-origin: top;
+        }
+
+        .string.left {
+            left: 28%;
+            transform: rotate(10deg);
+        }
+
+        .string.center {
+            left: 50%;
+        }
+
+        .string.right {
+            right: 28%;
+            transform: rotate(-10deg);
+        }
+
+        /* Feathers */
+        .feather {
+            position: absolute;
+            top: 60px;
+            left: -9px;
+            width: 19px;
+            height: 42px;
+            background: linear-gradient(135deg, #f5d995, #c18bdf);
+            border-radius: 100% 0 100% 0;
+            transform: rotate(45deg);
+            box-shadow: 0 0 10px #f5d995;
+        }
+
+        .string.center .feather {
+            left: -9px;
+            top: 65px;
+            transform: rotate(0deg);
+        }
+
+        .string.right .feather {
+            transform: rotate(-45deg);
+        }
+
+        h1 {
+            font-size: 34px;
+            letter-spacing: 5px;
+            color: #ffe8b0;
+            text-shadow: 0 0 15px #fff;
+            margin-top: 85px;
+        }
+
+        p {
+            margin-top: 12px;
+            font-size: 15px;
+            letter-spacing: 3px;
+            color: #d9e7ff;
+        }
+
+        .stars {
+            position: absolute;
+            color: white;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        .s1 { top: 15%; left: 20%; }
+        .s2 { top: 25%; right: 20%; }
+        .s3 { bottom: 20%; left: 15%; }
+        .s4 { bottom: 15%; right: 18%; }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 15px #f5d995;
+            }
+            to {
+                box-shadow: 0 0 40px #f5d995,
+                            0 0 65px #7bbcff;
+            }
+        }
+
+        @keyframes twinkle {
+            from { opacity: .2; transform: scale(.7); }
+            to { opacity: 1; transform: scale(1.3); }
+        }
+
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media(max-width: 480px) {
+            .dreamcatcher {
+                width: 190px;
+                height: 190px;
+            }
+
+            h1 {
+                font-size: 27px;
+            }
+
+            p {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars s1">✦</div>
+    <div class="stars s2">✧</div>
+    <div class="stars s3">✦</div>
+    <div class="stars s4">✧</div>
+
+    <div class="logo">
+
+        <div class="dreamcatcher">
+
+            <div class="web"></div>
+
+            <div class="string left">
+                <div class="feather"></div>
+            </div>
+
+            <div class="string center">
+                <div class="feather"></div>
+            </div>
+
+            <div class="string right">
+                <div class="feather"></div>
+            </div>
+
+        </div>
+
+        <h1>Dreamcatcher</h1>
+        <p>✧ CATCH YOUR DREAMS ✧</p>
+
+    </div>
+
+</body>
+</html>

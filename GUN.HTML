@@ -1,0 +1,616 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professional 3D Security Portal</title>
+
+<style>
+:root {
+    --primary: #3b82f6;
+    --primary-glow: rgba(59,130,246,.5);
+    --success: #10b981;
+    --success-glow: rgba(16,185,129,.4);
+    --bg-dark: #0f172a;
+    --panel-bg: rgba(30,41,59,.78);
+    --border-color: rgba(255,255,255,.12);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    color: #f8fafc;
+    background-color: var(--bg-dark);
+    background-image:
+        radial-gradient(at 0% 0%, rgba(30,58,138,.35), transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16,185,129,.08), transparent 50%);
+    perspective: 1400px;
+}
+
+/* MAIN 3D VIEWPORT */
+
+.viewport {
+    position: relative;
+    width: 420px;
+    height: 600px;
+    max-width: calc(100vw - 30px);
+    transform-style: preserve-3d;
+    animation: globalSequence 16s infinite ease-in-out;
+}
+
+/* GLASS PANELS */
+
+.panel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+
+    box-shadow:
+        0 30px 60px rgba(0,0,0,.4),
+        inset 0 1px 0 rgba(255,255,255,.1);
+
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* HEADER */
+
+.status-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #94a3b8;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 12px var(--primary);
+    animation: pulse 1.5s infinite;
+}
+
+/* 3D THREAT SCANNER VISUAL */
+
+.gun-canvas {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+.gun-3d-barrel {
+    position: relative;
+    width: 100px;
+    height: 180px;
+    transform-style: preserve-3d;
+    animation: barrelRotateSequence 16s infinite ease-in-out;
+}
+
+.barrel-part {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        #0f172a,
+        #475569,
+        #64748b,
+        #1e293b
+    );
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: inset 0 0 20px rgba(0,0,0,.5);
+}
+
+.part-front {
+    transform: translateZ(50px);
+}
+
+.part-back {
+    transform: rotateY(180deg) translateZ(50px);
+}
+
+.part-left {
+    transform: rotateY(-90deg) translateZ(50px);
+}
+
+.part-right {
+    transform: rotateY(90deg) translateZ(50px);
+}
+
+.part-top {
+    height: 100px;
+    transform: rotateX(90deg) translateZ(90px);
+    border-radius: 50%;
+    background: radial-gradient(circle, #020617 25%, #475569 80%);
+}
+
+/* SCANNER RING */
+
+.gun-canvas::before {
+    content: "";
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    border: 1px solid rgba(59,130,246,.5);
+    border-radius: 50%;
+    box-shadow:
+        0 0 20px rgba(59,130,246,.15),
+        inset 0 0 25px rgba(59,130,246,.12);
+    animation: scannerPulse 3s infinite ease-in-out;
+}
+
+.gun-canvas::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border: 1px dashed rgba(59,130,246,.25);
+    border-radius: 50%;
+    animation: scannerRotate 12s linear infinite;
+}
+
+/* FOOTER SCANNER */
+
+.footer-scan {
+    width: 100%;
+    height: 4px;
+    border-radius: 10px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--primary),
+        transparent
+    );
+    animation: scanLine 2s infinite alternate;
+}
+
+/* AUTHORIZATION SCREEN */
+
+.screen-authorized {
+    transform: rotateY(180deg);
+    opacity: 0;
+    animation: authorizedFade 16s infinite;
+}
+
+.screen-authorized .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 12px var(--success);
+}
+
+.auth-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-icon-svg {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 25px;
+    fill: none;
+    stroke: var(--success);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 15px var(--success-glow));
+    animation: successPop 1s ease-in-out;
+}
+
+.access-granted-text {
+    color: var(--success);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 0 15px var(--success-glow);
+}
+
+.authorized-subtitle {
+    margin-top: 14px;
+    color: #94a3b8;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+/* LOGIN SCREEN */
+
+.screen-login {
+    transform: rotateY(180deg);
+    opacity: 0;
+    animation: loginFade 16s infinite;
+}
+
+.login-card {
+    width: 100%;
+    flex-grow: 1;
+    margin-top: 20px;
+    padding: 24px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background: rgba(15,23,42,.65);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+
+.input-group {
+    margin-bottom: 22px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 9px;
+    color: #94a3b8;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(30,41,59,.9);
+    color: white;
+    font-size: 14px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    cursor: pointer;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transition: .3s;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px var(--primary-glow);
+}
+
+.secure-footer {
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* ANIMATIONS */
+
+@keyframes globalSequence {
+    0%, 20% {
+        transform: rotateY(0deg);
+    }
+
+    25%, 45% {
+        transform: rotateY(0deg);
+    }
+
+    50%, 70% {
+        transform: rotateY(180deg);
+    }
+
+    75%, 95% {
+        transform: rotateY(180deg) rotateZ(2deg) scale(.98);
+    }
+
+    100% {
+        transform: rotateY(360deg);
+    }
+}
+
+@keyframes barrelRotateSequence {
+    0%, 20% {
+        transform: rotateX(85deg) rotateY(75deg);
+        opacity: 1;
+    }
+
+    25%, 45% {
+        transform: rotateX(0deg) rotateY(0deg) translateZ(50px);
+        opacity: 1;
+    }
+
+    50%, 100% {
+        transform: rotateX(0deg) rotateY(90deg);
+        opacity: 0;
+    }
+}
+
+@keyframes authorizedFade {
+    0%, 49% {
+        opacity: 0;
+    }
+
+    50%, 70% {
+        opacity: 1;
+    }
+
+    71%, 100% {
+        opacity: 0;
+    }
+}
+
+@keyframes loginFade {
+    0%, 74% {
+        opacity: 0;
+    }
+
+    75%, 95% {
+        opacity: 1;
+    }
+
+    96%, 100% {
+        opacity: 0;
+    }
+}
+
+@keyframes scanLine {
+    from {
+        transform: scaleX(.5);
+        opacity: .3;
+    }
+
+    to {
+        transform: scaleX(1.1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: .4;
+        transform: scale(.8);
+    }
+}
+
+@keyframes scannerPulse {
+    0%, 100% {
+        transform: scale(.9);
+        opacity: .4;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+@keyframes scannerRotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* MOBILE RESPONSIVENESS */
+
+@media (max-width: 480px) {
+    .viewport {
+        width: 340px;
+        height: 540px;
+    }
+
+    .panel {
+        padding: 23px;
+        border-radius: 20px;
+    }
+
+    .gun-canvas {
+        height: 260px;
+    }
+
+    .access-granted-text {
+        font-size: 19px;
+        letter-spacing: 3px;
+    }
+
+    .login-card {
+        padding: 18px;
+    }
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+    .viewport,
+    .gun-3d-barrel,
+    .footer-scan,
+    .status-dot,
+    .gun-canvas::before,
+    .gun-canvas::after {
+        animation: none !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="viewport">
+
+    <!-- STAGE 1 & 2: THREAT SCANNER -->
+
+    <div class="panel">
+
+        <div class="status-header">
+            <span class="status-title">System Threat Check</span>
+            <div class="status-dot"></div>
+        </div>
+
+        <div class="gun-canvas">
+
+            <div class="gun-3d-barrel">
+                <div class="barrel-part part-front"></div>
+                <div class="barrel-part part-back"></div>
+                <div class="barrel-part part-left"></div>
+                <div class="barrel-part part-right"></div>
+                <div class="barrel-part part-top"></div>
+            </div>
+
+        </div>
+
+        <div class="footer-scan"></div>
+
+    </div>
+
+
+    <!-- STAGE 3: AUTHORIZED SCREEN -->
+
+    <div class="panel screen-authorized">
+
+        <div class="status-header">
+            <span class="status-title">Biometric Identity</span>
+            <div class="status-dot"></div>
+        </div>
+
+        <div class="auth-container">
+
+            <svg class="success-icon-svg" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+
+            <div class="access-granted-text">
+                Access Granted
+            </div>
+
+            <div class="authorized-subtitle">
+                IDENTITY SUCCESSFULLY VERIFIED
+            </div>
+
+        </div>
+
+        <div class="footer-scan"
+             style="background:linear-gradient(90deg,transparent,var(--success),transparent)">
+        </div>
+
+    </div>
+
+
+    <!-- STAGE 4: LOGIN POSTER -->
+
+    <div class="panel screen-login">
+
+        <div class="status-header">
+            <span class="status-title">Secure Gateway</span>
+
+            <div class="status-dot"
+                 style="background:#fff;box-shadow:0 0 10px #fff">
+            </div>
+        </div>
+
+        <div class="login-card">
+
+            <div class="input-group">
+                <label>Terminal Username</label>
+                <input
+                    type="text"
+                    placeholder="Enter username"
+                    value="ADMIN_USER"
+                    disabled
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Security Cryptokey</label>
+                <input
+                    type="password"
+                    value="DEMO_ACCESS_KEY"
+                    disabled
+                >
+            </div>
+
+            <button class="action-btn" type="button">
+                Initialize Session
+            </button>
+
+        </div>
+
+        <div class="secure-footer">
+            SECURED BY HARDWARE TOKEN
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
